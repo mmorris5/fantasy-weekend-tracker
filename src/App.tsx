@@ -7,6 +7,7 @@ import { Rooting } from './components/Rooting'
 import { Season } from './components/Season'
 import { Settings } from './components/Settings'
 import { Setup } from './components/Setup'
+import { StatusBar } from './components/StatusBar'
 import { Summary } from './components/Summary'
 import { useLeagues, useNflState, useSleeperUser, useWeekBoard } from './hooks/data'
 import type { LeagueWeek } from './lib/model'
@@ -34,7 +35,7 @@ export default function App() {
       />
     )
   }
-  if (!user.data) return <div className="boot">Loading…</div>
+  if (!user.data) return <div className="boot dim">LOADING…</div>
   return <Dashboard username={user.data.display_name || username} userId={user.data.user_id} onChangeUser={() => setEditingUser(true)} />
 }
 
@@ -73,7 +74,11 @@ function Dashboard({ username, userId, onChangeUser }: { username: string; userI
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
-      if (showSettings || (e.target instanceof Element && e.target.closest('input, select, textarea'))) return
+      if (showSettings) {
+        if (e.key === 'Escape') setShowSettings(false)
+        return
+      }
+      if (e.target instanceof Element && e.target.closest('input, select, textarea')) return
       const setWeek = (w: number) => setWeekChoice(Math.max(1, Math.min(REGULAR_SEASON_WEEKS, w)))
       switch (e.key) {
         case '1':
@@ -132,20 +137,20 @@ function Dashboard({ username, userId, onChangeUser }: { username: string; userI
         onSettings={() => setShowSettings(true)}
       />
       <main>
-        {loadError && <div className="banner error">Couldn't reach Sleeper: {(loadError as Error).message}</div>}
-        {errors.length > 0 && <div className="banner warn">Some leagues failed to load ({errors.length}). They'll retry automatically.</div>}
-        {leaguesQ.data && allLeagues.length === 0 && <div className="banner">No {season} NFL leagues found for {username}.</div>}
+        {loadError && <div className="banner error">ERR: COULDN'T REACH SLEEPER. {(loadError as Error).message}</div>}
+        {errors.length > 0 && <div className="banner warn">WARN: {errors.length} REQUEST(S) FAILED. RETRYING AUTOMATICALLY.</div>}
+        {leaguesQ.data && allLeagues.length === 0 && <div className="banner">NO {season} NFL LEAGUES FOUND FOR {username.toUpperCase()}.</div>}
 
         {tab !== 'season' && (
           <>
-            <div className="week-title">
-              <h1>
-                Week {week}
-                {week === currentWeek ? <span className="muted"> · this week</span> : week > currentWeek ? <span className="muted"> · upcoming</span> : null}
-              </h1>
+            <div className="toolbar">
+              <span>
+                <span className="amber strong">WEEK {String(week).padStart(2, '0')}</span>
+                <span className="dim">{week === currentWeek ? ' · CURRENT' : week > currentWeek ? ' · UPCOMING' : ' · FINAL'}</span>
+              </span>
               {tab === 'matchups' && (
-                <label className="sort">
-                  Sort
+                <label className="sort dim">
+                  SORT
                   <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
                     {SORTS.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -168,14 +173,15 @@ function Dashboard({ username, userId, onChangeUser }: { username: string; userI
         {tab === 'season' && <Season leagues={leagues} userId={userId} currentWeek={currentWeek} />}
 
         {hidden.length > 0 && (
-          <p className="muted footnote">
-            {hidden.length} league{hidden.length > 1 ? 's' : ''} hidden ·{' '}
-            <button className="link" onClick={() => setShowSettings(true)}>
-              manage
+          <p className="dim footnote">
+            {hidden.length} LEAGUE{hidden.length > 1 ? 'S' : ''} HIDDEN ·{' '}
+            <button className="text-btn" onClick={() => setShowSettings(true)}>
+              [MANAGE]
             </button>
           </p>
         )}
       </main>
+      <StatusBar source={games?.source} leagues={leagues.length} />
 
       {showSettings && (
         <Settings

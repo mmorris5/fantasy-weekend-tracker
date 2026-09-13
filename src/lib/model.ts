@@ -98,9 +98,9 @@ export const slotLabel = (slot: string) => SLOT_LABELS[slot] ?? slot
 export function leagueBadges(league: League): string[] {
   const { settings, scoring_settings: sc, roster_positions: slots } = league
   const badges: string[] = []
-  badges.push(['Redraft', 'Keeper', 'Dynasty', 'Guillotine'][settings.type] ?? 'League')
-  if (settings.best_ball) badges.push('Best Ball')
-  badges.push(sc.rec === 1 ? 'PPR' : sc.rec === 0.5 ? 'Half' : sc.rec ? `${sc.rec} PPR` : 'Std')
+  badges.push(['RDR', 'KPR', 'DYN', 'GUIL'][settings.type] ?? 'LG')
+  if (settings.best_ball) badges.push('BB')
+  badges.push(sc.rec === 1 ? 'PPR' : sc.rec === 0.5 ? 'HALF' : sc.rec ? `${sc.rec}PPR` : 'STD')
   if (slots.includes('SUPER_FLEX')) badges.push('SF')
   else if (slots.filter((s) => s === 'QB').length > 1) badges.push('2QB')
   if (sc.bonus_rec_te) badges.push('TEP')
@@ -263,17 +263,17 @@ export function tone(status: Status): 'good' | 'bad' | 'neutral' {
 }
 
 export const STATUS_LABEL: Record<Status, string> = {
-  winning: 'Winning',
-  losing: 'Losing',
-  tied: 'Tied',
-  won: 'Won',
-  lost: 'Lost',
-  tie: 'Tie',
-  upcoming: 'Upcoming',
-  safe: 'Safe',
-  danger: 'On the block',
-  chopped: 'Chopped',
-  eliminated: 'Eliminated',
-  nomatch: 'No matchup',
-  notfound: 'Not on a roster',
+  winning: 'WIN',
+  losing: 'LOSS',
+  tied: 'TIED',
+  won: 'WON',
+  lost: 'LOST',
+  tie: 'TIE',
+  upcoming: 'PRE',
+  safe: 'SAFE',
+  danger: 'RISK',
+  chopped: 'CHOP',
+  eliminated: 'OUT',
+  nomatch: 'BYE',
+  notfound: 'N/A',
 }

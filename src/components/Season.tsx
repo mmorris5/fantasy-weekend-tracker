@@ -1,7 +1,7 @@
 import { useQueries } from '@tanstack/react-query'
 import { sleeper, sleeperLeagueUrl, type League } from '../api/sleeper'
 import { useSeasonGrid } from '../hooks/data'
-import { ordinal, pts, record } from '../lib/format'
+import { pts, record } from '../lib/format'
 import { buildLeagueWeek, type LeagueWeek } from '../lib/model'
 
 type Props = { leagues: League[]; userId: string; currentWeek: number }
@@ -34,24 +34,26 @@ export function Season({ leagues, userId, currentWeek }: Props) {
 
   return (
     <section className="season">
-      <div className="season-summary">
-        <div className="stat">
-          <div className="stat-label">Settled H2H record, all leagues</div>
-          <div className="stat-value record">
-            <span className="good">{totalW}</span>–<span className="bad">{totalL}</span>
-            {totalT > 0 && <>–{totalT}</>}
+      <section className="summary">
+        <div className="cell">
+          <div className="cell-label">SEASON H2H · SETTLED</div>
+          <div className="cell-value">
+            <span className="good">{String(totalW).padStart(2, '0')}</span>
+            <span className="dim">-</span>
+            <span className="bad">{String(totalL).padStart(2, '0')}</span>
+            {totalT > 0 && <>-{String(totalT).padStart(2, '0')}</>}
           </div>
-          <div className="stat-hint">{totalW + totalL + totalT ? `${Math.round((totalW / (totalW + totalL + totalT)) * 100)}% win rate` : 'No weeks final yet'}</div>
+          <div className="cell-hint">{totalW + totalL + totalT ? `${((totalW / (totalW + totalL + totalT)) * 100).toFixed(1)}% WIN RATE` : 'NO WEEKS FINAL YET'}</div>
         </div>
-      </div>
-      <div className="season-scroll">
+      </section>
+      <div className="panel season-scroll">
         <table className="season-table">
           <thead>
             <tr>
-              <th className="left">League</th>
-              <th>Record</th>
+              <th className="left">LEAGUE</th>
+              <th>REC</th>
               {weeks.map((w) => (
-                <th key={w}>W{w}</th>
+                <th key={w}>W{String(w).padStart(2, '0')}</th>
               ))}
             </tr>
           </thead>
@@ -64,7 +66,7 @@ export function Season({ leagues, userId, currentWeek }: Props) {
                 <tr key={l.league_id}>
                   <td className="left">
                     <a href={sleeperLeagueUrl(l.league_id)} target="_blank" rel="noreferrer">
-                      {l.name}
+                      {l.name.toUpperCase()}
                     </a>
                   </td>
                   <td className="season-record">
@@ -74,7 +76,7 @@ export function Season({ leagues, userId, currentWeek }: Props) {
                         {me.record.w + me.record.l + me.record.t > 0 && (
                           <span className="muted">
                             {' '}
-                            {ordinal(me.rank)}/{rosterCount}
+                            #{String(me.rank).padStart(2, '0')}/{rosterCount}
                           </span>
                         )}
                       </>
@@ -91,20 +93,20 @@ export function Season({ leagues, userId, currentWeek }: Props) {
           </tbody>
         </table>
       </div>
-      <p className="muted footnote">Records come from Sleeper and update once a week is processed (usually Tuesday). The current week's cell shows the live score.</p>
+      <p className="dim footnote">RECORDS UPDATE WHEN SLEEPER PROCESSES THE WEEK (USUALLY TUE). CURRENT WEEK SHOWS LIVE SCORE.</p>
     </section>
   )
 }
 
 function SeasonCell({ c }: { c: LeagueWeek | undefined }) {
-  if (!c) return <td className="cell loading" />
-  if (!c.me || c.status === 'nomatch' || c.status === 'notfound') return <td className="cell muted">—</td>
-  if (c.status === 'eliminated') return <td className="cell muted">out</td>
+  if (!c) return <td className="dim">..</td>
+  if (!c.me || c.status === 'nomatch' || c.status === 'notfound') return <td className="dim">--</td>
+  if (c.status === 'eliminated') return <td className="dim">OUT</td>
 
   let letter = ''
   let cls = 'neutral'
   if (c.kind === 'guillotine') {
-    letter = c.survival ? ordinal(c.survival.rank) : ''
+    letter = c.survival ? `#${String(c.survival.rank).padStart(2, '0')}` : ''
     cls = c.status === 'chopped' ? 'bad' : c.final ? 'good' : 'neutral'
   } else if (c.opp) {
     letter = c.margin > 0 ? 'W' : c.margin < 0 ? 'L' : 'T'
@@ -113,9 +115,8 @@ function SeasonCell({ c }: { c: LeagueWeek | undefined }) {
   }
   const title = c.opp ? `${pts(c.me.points)} – ${pts(c.opp.points)} vs ${c.opp.name}` : pts(c.me.points)
   return (
-    <td className={`cell tone-${cls} ${c.final ? 'final' : 'live'}`} title={title}>
-      <span className="cell-letter">{letter}</span>
-      <span className="cell-pts">{c.started || c.final ? c.me.points.toFixed(1) : ''}</span>
+    <td className={`wk ${cls} ${c.final ? 'final' : 'live'}`} title={title}>
+      <span className="strong">{letter || '·'}</span> <span className="dim">{c.started || c.final ? c.me.points.toFixed(1) : ''}</span>
     </td>
   )
 }

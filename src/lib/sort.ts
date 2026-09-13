@@ -3,10 +3,10 @@ import { tone, type LeagueWeek } from './model'
 export type SortKey = 'closest' | 'status' | 'name' | 'sleeper'
 
 export const SORTS: { id: SortKey; label: string }[] = [
-  { id: 'sleeper', label: 'Sleeper order' },
-  { id: 'closest', label: 'Closest first' },
-  { id: 'status', label: 'Losing first' },
-  { id: 'name', label: 'Name' },
+  { id: 'sleeper', label: 'SLEEPER ORDER' },
+  { id: 'closest', label: 'CLOSEST FIRST' },
+  { id: 'status', label: 'LOSING FIRST' },
+  { id: 'name', label: 'NAME' },
 ]
 
 export function sortBoard(board: LeagueWeek[], key: SortKey): LeagueWeek[] {

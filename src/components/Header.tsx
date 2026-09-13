@@ -2,10 +2,12 @@ import { ago, useNow } from '../lib/format'
 
 export type Tab = 'matchups' | 'rooting' | 'season'
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'matchups', label: 'Matchups' },
-  { id: 'rooting', label: 'Rooting Guide' },
-  { id: 'season', label: 'Season' },
+  { id: 'matchups', label: 'MATCHUPS' },
+  { id: 'rooting', label: 'ROOTING' },
+  { id: 'season', label: 'SEASON' },
 ]
+
+const clockFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
 
 type Props = {
   tab: Tab
@@ -22,13 +24,16 @@ type Props = {
 }
 
 export function Header(p: Props) {
-  const now = useNow()
+  const now = useNow(1000)
   return (
     <header className="topbar">
-      <div className="brand">Weekend Tracker</div>
-      <nav className="tabs">
+      <div className="brand">
+        WKND<span>TRKR</span>
+      </div>
+      <nav className="fkeys">
         {TABS.map((t, i) => (
-          <button key={t.id} className={p.tab === t.id ? 'active' : ''} onClick={() => p.onTab(t.id)} title={`Press ${i + 1}`}>
+          <button key={t.id} className={p.tab === t.id ? 'active' : ''} onClick={() => p.onTab(t.id)}>
+            <kbd>{i + 1}</kbd>
             {t.label}
           </button>
         ))}
@@ -36,31 +41,31 @@ export function Header(p: Props) {
       <div className="spacer" />
       {p.tab !== 'season' && (
         <div className="week-picker">
-          <button onClick={() => p.onWeek(p.week - 1)} disabled={p.week <= 1} title="Previous week (←)">
-            ‹
+          <button onClick={() => p.onWeek(p.week - 1)} disabled={p.week <= 1} aria-label="Previous week">
+            ◂
           </button>
-          <select value={p.week} onChange={(e) => p.onWeek(Number(e.target.value))}>
+          <select value={p.week} onChange={(e) => p.onWeek(Number(e.target.value))} aria-label="Week">
             {Array.from({ length: p.maxWeek }, (_, i) => i + 1).map((w) => (
               <option key={w} value={w}>
-                Week {w}
+                WK {String(w).padStart(2, '0')}
               </option>
             ))}
           </select>
-          <button onClick={() => p.onWeek(p.week + 1)} disabled={p.week >= p.maxWeek} title="Next week (→)">
-            ›
+          <button onClick={() => p.onWeek(p.week + 1)} disabled={p.week >= p.maxWeek} aria-label="Next week">
+            ▸
           </button>
         </div>
       )}
-      <div className={`sync ${p.live ? 'is-live' : ''}`}>
-        {p.live && <span className="live-dot" />}
-        <span>{p.live ? 'Live' : 'Updated'}</span>
-        <span className="muted">{p.fetching ? 'refreshing…' : ago(p.updatedAt, now)}</span>
+      <div className="sync">
+        {p.live ? <span className="live">● LIVE</span> : <span className="dim">IDLE</span>}
+        <span className="dim">UPD {p.fetching ? '…' : ago(p.updatedAt, now)}</span>
       </div>
-      <button className="icon-btn" onClick={p.onRefresh} title="Refresh (r)">
-        ↻
+      <div className="clock">{clockFmt.format(now)}</div>
+      <button onClick={p.onRefresh}>
+        <kbd>R</kbd>REFRESH
       </button>
-      <button className="user-btn" onClick={p.onSettings} title="Leagues & account">
-        {p.username} ⚙
+      <button onClick={p.onSettings} className="user-btn">
+        <span className="dim">USER</span> {p.username.toUpperCase()}
       </button>
     </header>
   )

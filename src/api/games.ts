@@ -22,13 +22,22 @@ export type GameIndex = {
 // ESPN abbreviations that differ from Sleeper's.
 const ESPN_TO_SLEEPER: Record<string, string> = { WSH: 'WAS' }
 
-const kickoffFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+const kickoffFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+
+/** "Sun 1:00 PM" -> "SUN 1:00P" */
+const kickoffLabel = (ts: number) => kickoffFmt.format(ts).toUpperCase().replace(',', '').replace(/\s?([AP])M$/, '$1')
+
+function liveLabel(period: number, clock: string, name: string) {
+  if (name === 'STATUS_HALFTIME') return 'HALF'
+  if (name === 'STATUS_END_PERIOD') return `END Q${period}`
+  return period >= 5 ? `OT ${clock}` : `Q${period} ${clock}`
+}
 
 type EspnEvent = {
   id: string
   date: string
   competitions: {
-    status: { clock: number; period: number; type: { state: 'pre' | 'in' | 'post'; name: string; shortDetail: string } }
+    status: { clock: number; displayClock: string; period: number; type: { state: 'pre' | 'in' | 'post'; name: string; shortDetail: string } }
     competitors: { homeAway: 'home' | 'away'; score?: string; team: { abbreviation: string } }[]
   }[]
 }
@@ -40,7 +49,7 @@ async function fromEspn(season: string, week: number): Promise<Game[]> {
   const data = (await res.json()) as { events: EspnEvent[] }
   return data.events.flatMap((ev) => {
     const comp = ev.competitions[0]
-    const { type, period, clock } = comp.status
+    const { type, period, clock, displayClock } = comp.status
     if (type.name === 'STATUS_CANCELED' || type.name === 'STATUS_POSTPONED') return []
     const team = (side: 'home' | 'away') => comp.competitors.find((c) => c.homeAway === side)!
     const abbr = (side: 'home' | 'away') => {
@@ -59,7 +68,7 @@ async function fromEspn(season: string, week: number): Promise<Game[]> {
         away: abbr('away'),
         state: type.state,
         kickoff,
-        detail: type.state === 'pre' ? kickoffFmt.format(kickoff) : type.state === 'post' ? 'Final' : type.shortDetail,
+        detail: type.state === 'pre' ? kickoffLabel(kickoff) : type.state === 'post' ? 'FINAL' : liveLabel(period, displayClock, type.name),
         remaining,
         homeScore: score('home'),
         awayScore: score('away'),
@@ -80,7 +89,7 @@ async function fromSleeper(season: string, week: number): Promise<Game[]> {
         away: g.away,
         state,
         kickoff: null,
-        detail: state === 'post' ? 'Final' : state === 'in' ? 'Live' : g.date,
+        detail: state === 'post' ? 'FINAL' : state === 'in' ? 'LIVE' : g.date,
         remaining: state === 'post' ? 0 : state === 'in' ? 0.5 : 1,
         homeScore: null,
         awayScore: null,

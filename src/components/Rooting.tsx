@@ -47,51 +47,60 @@ export function Rooting({ board }: { board: LeagueWeek[] }) {
 
   return (
     <section className="rooting">
-      <div className="rooting-bar">
-        <p className="muted">Every starter in your lineups and your opponents' lineups, netted across leagues.</p>
+      <div className="toolbar">
+        <span className="dim">EVERY STARTER IN YOUR LINEUPS AND YOUR OPPONENTS', NETTED ACROSS LEAGUES</span>
         <label className="toggle">
           <input type="checkbox" checked={onlyRemaining} onChange={(e) => setOnlyRemaining(e.target.checked)} />
-          Only players still to play or live
+          LEFT/LIVE ONLY
         </label>
       </div>
       <div className="rooting-cols">
-        <RootList title="Root for" tone="good" rows={rootFor} net={net} />
-        <RootList title="Root against" tone="bad" rows={rootAgainst} net={net} />
+        <RootList title="ROOT FOR" tone="good" rows={rootFor} net={net} />
+        <RootList title="ROOT AGAINST" tone="bad" rows={rootAgainst} net={net} />
       </div>
-      {wash.length > 0 && <RootList title="Wash (you start and face them equally)" tone="neutral" rows={wash} net={net} />}
+      {wash.length > 0 && <RootList title="WASH · YOU START AND FACE THEM EQUALLY" tone="neutral" rows={wash} net={net} />}
     </section>
   )
 }
 
 function RootList({ title, tone, rows, net }: { title: string; tone: string; rows: Row[]; net: (r: Row) => number }) {
   return (
-    <div className="root-list">
-      <h2 className={`tone-text-${tone}`}>
-        {title} <span className="muted">{rows.length}</span>
-      </h2>
-      {rows.length === 0 && <p className="muted empty-note">Nobody here.</p>}
+    <div className="panel">
+      <div className={`panel-title ${tone}`}>
+        {title} <span className="dim">[{rows.length}]</span>
+      </div>
+      <div className="root-row root-head">
+        <span className="num">NET</span>
+        <span>PLAYER</span>
+        <span>STATUS</span>
+        <span>LEAGUES</span>
+        <span className="num">AVG</span>
+      </div>
+      {rows.length === 0 && <div className="root-row dim">NO PLAYERS</div>}
       {rows.map((r) => (
-        <div key={r.id} className={`root-row state-${r.state}`}>
-          <span className={`net tone-${tone}`}>{signed(net(r))}</span>
-          <span className="player">
-            <span className="player-name">{r.name}</span>
-            <span className="player-meta">
-              {r.pos} · {r.team ?? 'FA'} · {r.state === 'bye' ? 'No game' : r.game?.detail}
+        <div key={r.id} className="root-row">
+          <span className={`num strong ${tone}`}>{signed(net(r))}</span>
+          <span className={`trunc ${r.state === 'in' ? 'amber' : ''}`}>
+            {r.name}
+            <span className="dim">
+              {' '}
+              {r.pos} {r.team ?? 'FA'}
             </span>
           </span>
-          <span className="root-leagues">
+          <span className={`trunc ${r.state === 'in' ? 'amber' : 'dim'}`}>{r.state === 'bye' ? 'NO GAME' : r.game?.detail}</span>
+          <span className="root-leagues" title={[...r.forMe.map((l) => `+ ${l}`), ...r.against.map((l) => `− ${l}`)].join('\n')}>
             {r.forMe.map((l, i) => (
-              <span key={`f${i}`} className="chip good" title="You start him">
-                {l}
+              <span key={`f${i}`} className="tag good">
+                {l.toUpperCase()}
               </span>
             ))}
             {r.against.map((l, i) => (
-              <span key={`a${i}`} className="chip bad" title="Your opponent starts him">
-                {l}
+              <span key={`a${i}`} className="tag bad">
+                {l.toUpperCase()}
               </span>
             ))}
           </span>
-          <span className="num root-pts">{r.state === 'pre' ? '—' : pts(r.avgPts)}</span>
+          <span className="num">{r.state === 'pre' ? '--' : pts(r.avgPts)}</span>
         </div>
       ))}
     </div>
