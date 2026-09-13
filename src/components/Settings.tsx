@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { League } from '../api/sleeper'
 import { leagueBadges } from '../lib/model'
+import { shareLink } from '../lib/prefs'
 
 type Props = {
   username: string
@@ -11,6 +13,7 @@ type Props = {
 }
 
 export function Settings({ username, leagues, hidden, onHidden, onChangeUser, onClose }: Props) {
+  const [copied, setCopied] = useState(false)
   const hiddenSet = new Set(hidden)
   const toggle = (id: string) => onHidden(hiddenSet.has(id) ? hidden.filter((h) => h !== id) : [...hidden, id])
 
@@ -49,9 +52,19 @@ export function Settings({ username, leagues, hidden, onHidden, onChangeUser, on
         </ul>
         <div className="drawer-foot">
           <span className="muted">
-            Signed in as <b>{username}</b>
+            Showing <b>{username}</b>
           </span>
-          <button onClick={onChangeUser}>Switch user</button>
+          <span className="drawer-actions">
+            <button
+              onClick={() => {
+                void navigator.clipboard?.writeText(shareLink(username)).then(() => setCopied(true))
+              }}
+              title="Link that opens this dashboard for this username"
+            >
+              {copied ? 'Copied!' : 'Copy link'}
+            </button>
+            <button onClick={onChangeUser}>Switch user</button>
+          </span>
         </div>
         <div className="shortcuts muted">
           <b>Keyboard:</b> j/k move · Enter open · e expand all · ←/→ week · 1/2/3 tabs · r refresh

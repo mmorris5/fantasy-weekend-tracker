@@ -3,6 +3,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { applyLinkedUser } from './lib/prefs'
+
+applyLinkedUser()
 
 const queryClient = new QueryClient({
   defaultOptions: {
