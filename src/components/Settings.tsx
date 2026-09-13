@@ -1,0 +1,62 @@
+import type { League } from '../api/sleeper'
+import { leagueBadges } from '../lib/model'
+
+type Props = {
+  username: string
+  leagues: League[]
+  hidden: string[]
+  onHidden: (ids: string[]) => void
+  onChangeUser: () => void
+  onClose: () => void
+}
+
+export function Settings({ username, leagues, hidden, onHidden, onChangeUser, onClose }: Props) {
+  const hiddenSet = new Set(hidden)
+  const toggle = (id: string) => onHidden(hiddenSet.has(id) ? hidden.filter((h) => h !== id) : [...hidden, id])
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="drawer" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Settings">
+        <div className="drawer-head">
+          <h2>Leagues</h2>
+          <button className="icon-btn" onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <p className="muted">Uncheck leagues you don't want on the dashboard.</p>
+        <div className="drawer-actions">
+          <button onClick={() => onHidden([])}>Show all</button>
+          <button onClick={() => onHidden(leagues.map((l) => l.league_id))}>Hide all</button>
+        </div>
+        <ul className="league-picker">
+          {leagues.map((l) => (
+            <li key={l.league_id}>
+              <label>
+                <input type="checkbox" checked={!hiddenSet.has(l.league_id)} onChange={() => toggle(l.league_id)} />
+                <span>
+                  <span className="league-name">{l.name}</span>
+                  <span className="badges">
+                    {leagueBadges(l).map((b) => (
+                      <span key={b} className="badge">
+                        {b}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+        <div className="drawer-foot">
+          <span className="muted">
+            Signed in as <b>{username}</b>
+          </span>
+          <button onClick={onChangeUser}>Switch user</button>
+        </div>
+        <div className="shortcuts muted">
+          <b>Keyboard:</b> j/k move · Enter open · e expand all · ←/→ week · 1/2/3 tabs · r refresh
+        </div>
+      </div>
+    </div>
+  )
+}
