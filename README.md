@@ -1,6 +1,8 @@
 # Weekend Tracker
 
-A fast, desktop-only dashboard for every Sleeper fantasy football league you're in. Enter your Sleeper username (no login) and see all your matchups on one screen.
+A fast dashboard for every Sleeper fantasy football league you're in. Enter your Sleeper username (no login) and see all your matchups on one screen.
+
+Live at **https://mmorris5.github.io/fantasy-weekend-tracker/** — add `?user=yourname` to share a link that opens straight to someone's leagues.
 
 ```bash
 npm install
@@ -15,6 +17,10 @@ npm run dev
 - Game strip showing each NFL game's score/clock and how many of your (green) and your opponents' (red) starters are in it.
 
 Keyboard: `1`/`2`/`3` tabs · `←`/`→` week · `j`/`k` move · Enter open · `e` expand all · `r` refresh.
+
+## Phones
+
+Below 900px the wide column grid re-flows: each league becomes a stacked card, lineups list your player above your opponent's, and the keyboard status bar drops away. On iOS, Share → *Add to Home Screen* installs it with an app icon and opens it fullscreen (a web manifest covers Android).
 
 ## Data
 
