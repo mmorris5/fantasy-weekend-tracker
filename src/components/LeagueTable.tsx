@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { sleeperLeagueUrl } from '../api/sleeper'
-import { proj, pts, record, signed } from '../lib/format'
-import { STATUS_LABEL, slotLabel, tone, type LeagueWeek, type PlayerLine, type TeamWeek } from '../lib/model'
+import { ordinal, proj, pts, record, signed } from '../lib/format'
+import { leagueAccent, slotLabel, STATUS_LABEL, tone, type LeagueWeek, type PlayerLine, type TeamWeek } from '../lib/model'
 
 type Props = {
   board: LeagueWeek[]
@@ -12,31 +12,11 @@ type Props = {
   onCursor: (i: number) => void
 }
 
-const pad = (n: number) => String(n).padStart(2, '0')
-
 export function LeagueTable({ board, loadingCount, expanded, cursor, onToggle, onCursor }: Props) {
   return (
-    <section className="panel">
-      <div className="lt lt-head" role="row">
-        <span>ST</span>
-        <span>LEAGUE</span>
-        <span>FMT</span>
-        <span className="num">ME</span>
-        <span className="num">OPP</span>
-        <span className="num">Δ</span>
-        <span />
-        <span className="num">PRJ</span>
-        <span className="num">OPRJ</span>
-        <span className="num">PRJ Δ</span>
-        <span className="num" title="Starters yet to play / playing, mine then opponent's">
-          LEFT/LIVE
-        </span>
-        <span>OPPONENT</span>
-        <span className="num">REC</span>
-        <span />
-      </div>
+    <section className="board">
       {board.map((b, i) => (
-        <LeagueRow
+        <LeagueCard
           key={b.league.league_id}
           b={b}
           open={expanded.has(b.league.league_id)}
@@ -48,75 +28,113 @@ export function LeagueTable({ board, loadingCount, expanded, cursor, onToggle, o
         />
       ))}
       {Array.from({ length: loadingCount }, (_, i) => (
-        <div key={`sk-${i}`} className="lt lt-loading">
-          <span className="dim">LOADING…</span>
-        </div>
+        <article key={`sk-${i}`} className="card skeleton" aria-hidden />
       ))}
     </section>
   )
 }
 
-function LeagueRow({ b, open, focused, onToggle }: { b: LeagueWeek; open: boolean; focused: boolean; onToggle: () => void }) {
+function LeagueCard({ b, open, focused, onToggle }: { b: LeagueWeek; open: boolean; focused: boolean; onToggle: () => void }) {
   const t = tone(b.status)
   const inactive = !b.me || b.status === 'nomatch' || b.status === 'eliminated' || b.status === 'notfound'
   const { me, opp, survival } = b
-  const cls = (n: number) => (n > 0 ? 'good' : n < 0 ? 'bad' : '')
+  const accent = leagueAccent(b.league.league_id)
 
   return (
-    <div className={`lt-group ${open ? 'open' : ''} ${focused ? 'focused' : ''} ${inactive ? 'inactive' : ''}`} data-focused={focused || undefined}>
-      <div className="lt lt-row" role="row" onClick={inactive ? undefined : onToggle}>
-        <span className={`st tone-${t} ${b.final ? 'final' : ''}`}>{STATUS_LABEL[b.status]}</span>
-        <span className="trunc strong" title={b.league.name}>
-          {b.league.name.toUpperCase()}
+    <article
+      className={`card tone-${t} ${open ? 'open' : ''} ${focused ? 'focused' : ''} ${inactive ? 'inactive' : ''}`}
+      style={{ '--accent': accent } as React.CSSProperties}
+      data-focused={focused || undefined}
+    >
+      <button className="card-head" onClick={inactive ? undefined : onToggle} disabled={inactive}>
+        <span className="card-title">
+          <span className="league-name">{b.league.name}</span>
+          <span className="tags">
+            {b.badges.map((x) => (
+              <span key={x} className="tag">
+                {x}
+              </span>
+            ))}
+          </span>
         </span>
-        <span className="trunc dim">{b.badges.join(' ')}</span>
+        <span className={`pill tone-${t} ${b.final ? 'final' : ''}`}>{STATUS_LABEL[b.status]}</span>
+      </button>
 
-        <span className="num strong">{me ? pts(me.points) : ''}</span>
-        <span className="num">{opp ? pts(opp.points) : survival ? `${pad(survival.rank)}/${survival.alive}` : ''}</span>
-        <span className={`num strong ${cls(b.margin)}`}>{me && !inactive ? signed(b.margin) : ''}</span>
-        <span>{me && !inactive && <MarginBar b={b} />}</span>
+      {me && (
+        <div className="card-score">
+          <div className="side">
+            <div className="team">{me.name}</div>
+            <div className="score">{pts(me.points)}</div>
+            <div className="proj">{b.final ? 'final' : `proj ${proj(me.projected)}`}</div>
+          </div>
 
-        <span className="num dim">{me && !b.final ? proj(me.projected) : ''}</span>
-        <span className="num dim">{opp && !b.final ? proj(opp.projected) : survival && !b.final ? `${pad(survival.projRank)}/${survival.alive}` : ''}</span>
-        <span className={`num ${cls(b.projMargin)}`}>{me && !inactive && !b.final ? signed(b.projMargin) : ''}</span>
+          <div className="mid">
+            <div className={`delta ${b.margin > 0 ? 'good' : b.margin < 0 ? 'bad' : ''}`}>{inactive ? '' : signed(b.margin)}</div>
+            {!inactive && <MarginBar b={b} />}
+            <div className="proj">{!inactive && !b.final ? `proj ${signed(b.projMargin)}` : ''}</div>
+          </div>
 
-        <span className="num">
-          {me && !inactive && (
-            <>
-              {pad(me.counts.pre)}
-              <span className="dim">/</span>
-              <span className="amber">{pad(me.counts.in)}</span>
+          <div className="side right">
+            {opp ? (
+              <>
+                <div className="team">{opp.name}</div>
+                <div className="score">{pts(opp.points)}</div>
+                <div className="proj">{b.final ? 'final' : `proj ${proj(opp.projected)}`}</div>
+              </>
+            ) : survival ? (
+              <>
+                <div className="team">of {survival.alive} alive</div>
+                <div className="score">{ordinal(survival.rank)}</div>
+                <div className="proj">{b.final ? 'final place' : `proj ${ordinal(survival.projRank)}`}</div>
+              </>
+            ) : (
+              <div className="team">{b.status === 'eliminated' ? 'Out of this league' : 'No opponent'}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <footer className="card-foot">
+        {me && !inactive ? (
+          <>
+            <span>
+              <b>{me.counts.pre}</b> left
+              {me.counts.in > 0 && (
+                <>
+                  , <b className="live">{me.counts.in}</b> live
+                </>
+              )}
               {opp && (
-                <span className="dim">
+                <span className="muted">
                   {' '}
-                  {pad(opp.counts.pre)}/{pad(opp.counts.in)}
+                  · opp {opp.counts.pre} left{opp.counts.in > 0 ? `, ${opp.counts.in} live` : ''}
                 </span>
               )}
-            </>
-          )}
-        </span>
+            </span>
+            <span className="muted">
+              {b.kind === 'h2h' && (
+                <>
+                  {record(me.record.w, me.record.l, me.record.t)}
+                  {me.record.w + me.record.l + me.record.t > 0 && ` · ${ordinal(me.rank)} of ${b.league.total_rosters}`}
+                </>
+              )}
+            </span>
+          </>
+        ) : (
+          <span className="muted">Nothing to show this week</span>
+        )}
+        <a href={sleeperLeagueUrl(b.league.league_id)} target="_blank" rel="noreferrer" title="Open in Sleeper">
+          Sleeper ↗
+        </a>
+        {!inactive && (
+          <button className="expander" onClick={onToggle}>
+            {open ? 'Hide lineups' : 'Lineups'}
+          </button>
+        )}
+      </footer>
 
-        <span className="trunc dim" title={opp?.name}>
-          {opp ? opp.name.toUpperCase() : survival ? 'CUT: LOWEST SCORE' : b.status === 'eliminated' ? 'ELIMINATED' : '—'}
-        </span>
-        <span className="num dim">
-          {me && b.kind === 'h2h' ? (
-            <>
-              {record(me.record.w, me.record.l, me.record.t)}
-              {me.record.w + me.record.l + me.record.t > 0 && ` #${pad(me.rank)}`}
-            </>
-          ) : (
-            ''
-          )}
-        </span>
-        <span className="row-actions">
-          <a href={sleeperLeagueUrl(b.league.league_id)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} title="Open in Sleeper">
-            ↗
-          </a>
-        </span>
-      </div>
       {open && me && <Lineups me={me} opp={opp} />}
-    </div>
+    </article>
   )
 }
 
@@ -126,7 +144,6 @@ function MarginBar({ b }: { b: LeagueWeek }) {
   const { margin, projMargin } = b
   return (
     <span className="bar" title={`Live ${signed(margin)} · projected ${signed(projMargin)}`}>
-      <span className="bar-mid" />
       <span className={`bar-fill ${margin >= 0 ? 'pos' : 'neg'}`} style={{ width: `${pct(margin)}%`, [margin >= 0 ? 'left' : 'right']: '50%' }} />
       {!b.final && <span className="bar-proj" style={{ left: `${50 + (projMargin >= 0 ? pct(projMargin) : -pct(projMargin))}%` }} />}
     </span>
@@ -137,81 +154,70 @@ function Lineups({ me, opp }: { me: TeamWeek; opp: TeamWeek | null }) {
   const rows = me.starters.map((p, i) => [p, opp?.starters[i]] as const)
   return (
     <div className="lineups">
-      <div className="box">
-        <div className="box-row box-head">
-          <span>{me.name.toUpperCase()}</span>
-          <span>STATUS</span>
-          <span className="num">PTS</span>
-          <span className="num">PRJ</span>
-          <span className="center">POS</span>
-          <span className="num">PRJ</span>
-          <span className="num">PTS</span>
-          <span className="right">STATUS</span>
-          <span className="right">{opp?.name.toUpperCase()}</span>
+      <div className="lu">
+        <div className="lu-row lu-head">
+          <span>{me.name}</span>
+          <span className="num">Pts</span>
+          <span className="num">Proj</span>
+          <span className="center">Slot</span>
+          <span className="num">Proj</span>
+          <span className="num">Pts</span>
+          <span className="right">{opp?.name ?? ''}</span>
         </div>
         {rows.map(([mine, theirs], i) => (
-          <div className="box-row" key={i}>
-            <PlayerName p={mine} />
-            <Status p={mine} />
+          <div className="lu-row" key={i}>
+            <Player p={mine} />
             <Points p={mine} />
             <Projection p={mine} />
-            <span className="center amber">{slotLabel(mine.slot)}</span>
+            <span className="slot">{slotLabel(mine.slot)}</span>
             {theirs ? <Projection p={theirs} /> : <span />}
             {theirs ? <Points p={theirs} /> : <span />}
-            {theirs ? <Status p={theirs} right /> : <span />}
-            {theirs ? <PlayerName p={theirs} right /> : <span />}
+            {theirs ? <Player p={theirs} right /> : <span />}
           </div>
         ))}
-        <div className="box-row box-total">
-          <span>TOTAL</span>
+        <div className="lu-row lu-total">
+          <span>Total</span>
+          <span className="num">{pts(me.points)}</span>
+          <span className="num muted">{proj(me.projected)}</span>
           <span />
-          <span className="num strong">{pts(me.points)}</span>
-          <span className="num dim">{proj(me.projected)}</span>
-          <span />
-          <span className="num dim">{opp ? proj(opp.projected) : ''}</span>
-          <span className="num strong">{opp ? pts(opp.points) : ''}</span>
-          <span />
+          <span className="num muted">{opp ? proj(opp.projected) : ''}</span>
+          <span className="num">{opp ? pts(opp.points) : ''}</span>
           <span />
         </div>
       </div>
       <div className="bench">
-        <BenchList title="MY BENCH" players={me.bench} />
-        {opp && <BenchList title="OPP BENCH" players={opp.bench} />}
+        <BenchList title="My bench" players={me.bench} />
+        {opp && <BenchList title="Their bench" players={opp.bench} />}
       </div>
     </div>
   )
 }
 
-function PlayerName({ p, right }: { p: PlayerLine; right?: boolean }) {
-  if (p.empty) return <span className={`trunc bad ${right ? 'right' : ''}`}>-- EMPTY --</span>
+function Player({ p, right }: { p: PlayerLine; right?: boolean }) {
+  if (p.empty) return <span className={`player empty ${right ? 'right' : ''}`}>Empty slot</span>
   return (
-    <span className={`trunc ${right ? 'right' : ''} ${p.state === 'in' ? 'amber' : ''}`}>
-      {p.name}
-      <span className="dim">
-        {' '}
-        {p.pos} {p.team ?? 'FA'}
+    <span className={`player ${right ? 'right' : ''}`}>
+      <span className="player-name">
+        {p.name}
+        {p.injury && <span className="injury">{p.injury.slice(0, 1).toUpperCase()}</span>}
       </span>
-      {p.injury && <span className="bad"> {p.injury.slice(0, 1).toUpperCase()}</span>}
+      <span className={`player-meta ${p.state === 'in' ? 'live' : ''}`}>
+        {p.pos} · {p.team ?? 'FA'} · {p.state === 'bye' ? 'No game' : (p.game?.detail ?? '')}
+      </span>
     </span>
   )
 }
 
-function Status({ p, right }: { p: PlayerLine; right?: boolean }) {
-  if (p.empty) return <span />
-  const label = p.state === 'bye' ? 'NO GAME' : (p.game?.detail ?? '')
-  return <span className={`trunc ${right ? 'right' : ''} ${p.state === 'in' ? 'amber' : 'dim'}`}>{label}</span>
-}
-
 function Points({ p }: { p: PlayerLine }) {
   if (p.empty) return <span />
-  return <span className={`num ${p.state === 'in' ? 'amber strong' : p.state === 'pre' ? 'dim' : 'strong'}`}>{p.state === 'pre' ? '--' : pts(p.pts)}</span>
+  return <span className={`num pts ${p.state === 'in' ? 'live' : ''} ${p.state === 'pre' ? 'muted' : ''}`}>{p.state === 'pre' ? '—' : pts(p.pts)}</span>
 }
 
 function Projection({ p }: { p: PlayerLine }) {
   if (p.empty) return <span />
   const settled = p.state === 'post' || p.state === 'bye'
   return (
-    <span className="num dim" title={settled ? 'Pregame projection' : 'Live projection'}>
+    <span className="num muted" title={settled ? 'Pregame projection' : 'Live projection'}>
       {proj(settled ? p.proj : p.live)}
     </span>
   )
@@ -226,18 +232,18 @@ function BenchList({ title, players }: { title: string; players: PlayerLine[] })
   const hiddenCount = players.length - relevant.length
   return (
     <div className="bench-list">
-      <div className="panel-title">{title}</div>
+      <div className="bench-title">{title}</div>
       {shown.map((p) => (
         <div key={p.id} className="bench-row">
-          <span className={`trunc ${p.state === 'in' ? 'amber' : ''}`}>
-            {p.name} <span className="dim">{p.pos}</span>
+          <span className="trunc">
+            {p.name} <span className="muted">{p.pos}</span>
           </span>
-          <span className={`num ${p.state === 'pre' ? 'dim' : p.state === 'in' ? 'amber' : ''}`}>{p.state === 'pre' ? proj(p.proj) : pts(p.pts)}</span>
+          <span className={`num ${p.state === 'pre' ? 'muted' : ''} ${p.state === 'in' ? 'live' : ''}`}>{p.state === 'pre' ? proj(p.proj) : pts(p.pts)}</span>
         </div>
       ))}
       {hiddenCount > 0 && (
         <button className="text-btn" onClick={() => setShowAll(!showAll)}>
-          {showAll ? '[-] HIDE INACTIVE' : `[+] ${hiddenCount} INACTIVE`}
+          {showAll ? 'Hide inactive' : `+${hiddenCount} inactive`}
         </button>
       )}
     </div>

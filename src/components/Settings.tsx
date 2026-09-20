@@ -21,15 +21,15 @@ export function Settings({ username, leagues, hidden, onHidden, onChangeUser, on
     <div className="overlay" onClick={onClose}>
       <div className="drawer" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Settings">
         <div className="drawer-head">
-          <div className="panel-title">LEAGUES</div>
+          <h2>Leagues</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
-            ESC
+            ✕
           </button>
         </div>
-        <p className="dim">UNCHECK LEAGUES TO HIDE THEM FROM THE BOARD.</p>
+        <p className="muted">Uncheck leagues to hide them from the board.</p>
         <div className="drawer-actions">
-          <button onClick={() => onHidden([])}>SHOW ALL</button>
-          <button onClick={() => onHidden(leagues.map((l) => l.league_id))}>HIDE ALL</button>
+          <button onClick={() => onHidden([])}>Show all</button>
+          <button onClick={() => onHidden(leagues.map((l) => l.league_id))}>Hide all</button>
         </div>
         <ul className="league-picker">
           {leagues.map((l) => (
@@ -37,16 +37,16 @@ export function Settings({ username, leagues, hidden, onHidden, onChangeUser, on
               <label>
                 <input type="checkbox" checked={!hiddenSet.has(l.league_id)} onChange={() => toggle(l.league_id)} />
                 <span>
-                  <span className="strong">{l.name.toUpperCase()}</span>
-                  <span className="dim">{leagueBadges(l).join(' ')}</span>
+                  <span className="league-name">{l.name}</span>
+                  <span className="tags">{leagueBadges(l).map((b) => (<span key={b} className="tag">{b}</span>))}</span>
                 </span>
               </label>
             </li>
           ))}
         </ul>
         <div className="drawer-foot">
-          <span className="dim">
-            USER <span className="amber">{username.toUpperCase()}</span>
+          <span className="muted">
+            Showing <b>{username}</b>
           </span>
           <span className="drawer-actions">
             <button
@@ -55,9 +55,9 @@ export function Settings({ username, leagues, hidden, onHidden, onChangeUser, on
               }}
               title="Link that opens this dashboard for this username"
             >
-              {copied ? 'COPIED' : 'COPY LINK'}
+              {copied ? 'Copied!' : 'Copy link'}
             </button>
-            <button onClick={onChangeUser}>SWITCH USER</button>
+            <button onClick={onChangeUser}>Switch user</button>
           </span>
         </div>
       </div>

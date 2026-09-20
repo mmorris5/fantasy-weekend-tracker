@@ -24,7 +24,7 @@ export function GameStrip({ games, board }: { games: GameIndex | undefined; boar
   return (
     <section className="panel">
       <div className="panel-title">
-        NFL <span className="dim">· MINE/OPP STARTERS PER GAME</span>
+        NFL games <span className="muted">· your starters / your opponents'</span>
       </div>
       <div className="games">
         {sorted.map((g) => {
@@ -32,16 +32,19 @@ export function GameStrip({ games, board }: { games: GameIndex | undefined; boar
           const scored = g.homeScore !== null && g.awayScore !== null
           return (
             <div key={g.id} className={`game state-${g.state}`}>
-              <span className={scored && g.awayScore! > g.homeScore! ? 'lead' : ''}>
-                {g.away.padEnd(3)} {scored ? String(g.awayScore).padStart(2) : '  '}
+              <span className="game-teams">
+                <span className={scored && g.awayScore! > g.homeScore! ? 'lead' : ''}>
+                  {g.away} {scored ? g.awayScore : ''}
+                </span>
+                <span className="at">@</span>
+                <span className={scored && g.homeScore! > g.awayScore! ? 'lead' : ''}>
+                  {g.home} {scored ? g.homeScore : ''}
+                </span>
               </span>
-              <span className={scored && g.homeScore! > g.awayScore! ? 'lead' : ''}>
-                {g.home.padEnd(3)} {scored ? String(g.homeScore).padStart(2) : '  '}
-              </span>
-              <span className="game-detail">{g.detail}</span>
+              <span className="game-detail trunc">{g.detail}</span>
               <span className="game-exp" title={`${e?.mine ?? 0} of my starters, ${e?.theirs ?? 0} opponent starters`}>
                 <span className="good">{e?.mine ?? 0}</span>
-                <span className="dim">/</span>
+                <span className="muted">/</span>
                 <span className="bad">{e?.theirs ?? 0}</span>
               </span>
             </div>

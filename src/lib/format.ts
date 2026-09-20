@@ -10,10 +10,8 @@ export function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0])
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0')
-
 export function record(w: number, l: number, t = 0) {
-  return t ? `${pad2(w)}-${pad2(l)}-${pad2(t)}` : `${pad2(w)}-${pad2(l)}`
+  return t ? `${w}-${l}-${t}` : `${w}-${l}`
 }
 
 export function useNow(intervalMs = 5000) {
@@ -28,7 +26,7 @@ export function useNow(intervalMs = 5000) {
 export function ago(ts: number, now: number) {
   if (!ts) return '—'
   const s = Math.max(0, Math.round((now - ts) / 1000))
-  if (s < 60) return `${s}S`
+  if (s < 60) return `${s}s ago`
   const m = Math.round(s / 60)
-  return m < 60 ? `${m}M` : `${Math.round(m / 60)}H`
+  return m < 60 ? `${m}m ago` : `${Math.round(m / 60)}h ago`
 }

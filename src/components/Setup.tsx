@@ -14,23 +14,15 @@ export function Setup({ initial = '', error, loading, onSubmit }: Props) {
         }}
       >
         <div className="brand">
-          WKND<span>TRKR</span>
+          <span className="brand-mark">WT</span>
+          Weekend Tracker
         </div>
-        <pre className="dim">
-          {`EVERY SLEEPER LEAGUE. ONE SCREEN.
-NO LOGIN. READ-ONLY PUBLIC DATA.`}
-        </pre>
-        <label className="prompt">
-          <span className="amber">SLEEPER USER&gt;</span>
-          <input autoFocus value={value} onChange={(e) => setValue(e.target.value)} spellCheck={false} autoComplete="off" aria-label="Sleeper username" />
-        </label>
-        <div className="setup-foot">
-          <button type="submit" disabled={loading || !value.trim()}>
-            <kbd>↵</kbd>
-            {loading ? 'LOOKING UP…' : 'LOAD'}
-          </button>
-          {error && <span className="bad">ERR: {error.toUpperCase()}</span>}
-        </div>
+        <p className="muted">Every Sleeper league on one screen. Enter your Sleeper username — no login, read-only public data.</p>
+        <input autoFocus placeholder="Sleeper username" value={value} onChange={(e) => setValue(e.target.value)} spellCheck={false} autoComplete="off" />
+        <button type="submit" className="primary" disabled={loading || !value.trim()}>
+          {loading ? 'Looking up…' : 'Load my leagues'}
+        </button>
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   )

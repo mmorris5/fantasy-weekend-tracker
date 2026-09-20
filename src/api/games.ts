@@ -24,12 +24,11 @@ const ESPN_TO_SLEEPER: Record<string, string> = { WSH: 'WAS' }
 
 const kickoffFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })
 
-/** "Sun 1:00 PM" -> "SUN 1:00P" */
-const kickoffLabel = (ts: number) => kickoffFmt.format(ts).toUpperCase().replace(',', '').replace(/\s?([AP])M$/, '$1')
+const kickoffLabel = (ts: number) => kickoffFmt.format(ts).replace(',', '')
 
 function liveLabel(period: number, clock: string, name: string) {
-  if (name === 'STATUS_HALFTIME') return 'HALF'
-  if (name === 'STATUS_END_PERIOD') return `END Q${period}`
+  if (name === 'STATUS_HALFTIME') return 'Halftime'
+  if (name === 'STATUS_END_PERIOD') return `End Q${period}`
   return period >= 5 ? `OT ${clock}` : `Q${period} ${clock}`
 }
 
@@ -68,7 +67,7 @@ async function fromEspn(season: string, week: number): Promise<Game[]> {
         away: abbr('away'),
         state: type.state,
         kickoff,
-        detail: type.state === 'pre' ? kickoffLabel(kickoff) : type.state === 'post' ? 'FINAL' : liveLabel(period, displayClock, type.name),
+        detail: type.state === 'pre' ? kickoffLabel(kickoff) : type.state === 'post' ? 'Final' : liveLabel(period, displayClock, type.name),
         remaining,
         homeScore: score('home'),
         awayScore: score('away'),
@@ -89,7 +88,7 @@ async function fromSleeper(season: string, week: number): Promise<Game[]> {
         away: g.away,
         state,
         kickoff: null,
-        detail: state === 'post' ? 'FINAL' : state === 'in' ? 'LIVE' : g.date,
+        detail: state === 'post' ? 'Final' : state === 'in' ? 'Live' : g.date,
         remaining: state === 'post' ? 0 : state === 'in' ? 0.5 : 1,
         homeScore: null,
         awayScore: null,

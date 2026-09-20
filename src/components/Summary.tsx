@@ -1,7 +1,7 @@
 import { proj, pts } from '../lib/format'
 import type { LeagueWeek } from '../lib/model'
 
-const pad = (n: number) => String(n).padStart(2, '0')
+const pad = (n: number) => String(n)
 
 export function Summary({ board }: { board: LeagueWeek[] }) {
   const h2h = board.filter((b) => b.kind === 'h2h' && b.opp)
@@ -37,30 +37,30 @@ export function Summary({ board }: { board: LeagueWeek[] }) {
 
   return (
     <section className="summary">
-      <Cell label="REC NOW" hint={`${h2h.length} H2H`}>
+      <Cell label="Right now" hint={`${h2h.length} head-to-head`}>
         <Record {...now} />
       </Cell>
-      <Cell label="REC PROJ" hint={`${closeGames} WITHIN 10`}>
+      <Cell label="Projected" hint={`${closeGames} within 10 pts`}>
         <Record {...projected} />
       </Cell>
-      <Cell label="REC FINAL" hint={`${settled.w + settled.l + settled.t}/${h2h.length} SETTLED`}>
+      <Cell label="Final" hint={`${settled.w + settled.l + settled.t} of ${h2h.length} settled`}>
         <Record {...settled} />
       </Cell>
       {guillotine.length > 0 && (
-        <Cell label="GUILLOTINE" hint={guillotine.map((g) => `${pad(g.survival?.rank ?? 0)}/${g.survival?.alive ?? 0}`).join(' ')}>
+        <Cell label="Guillotine" hint={guillotine.map((g) => `${pad(g.survival?.rank ?? 0)}/${g.survival?.alive ?? 0}`).join(' ')}>
           <span className={atRisk ? 'bad' : 'good'}>
-            {guillotine.length - atRisk}/{guillotine.length} SAFE
+            {guillotine.length - atRisk}/{guillotine.length} safe
           </span>
         </Cell>
       )}
-      <Cell label="PTS" hint={`PROJ ${proj(totalProj)}`}>
+      <Cell label="My points" hint={`proj ${proj(totalProj)}`}>
         {pts(totalPts)}
       </Cell>
-      <Cell label="STARTERS LEFT/LIVE/DONE" hint={`OPP ${oppLeft} LEFT+LIVE`}>
+      <Cell label="Starters" hint={`opponents: ${oppLeft} left or live`}>
         {left}
-        <span className="dim">/</span>
-        <span className="amber">{playing}</span>
-        <span className="dim">/</span>
+        <span className="muted">/</span>
+        <span className="live">{playing}</span>
+        <span className="muted">/</span>
         {done}
       </Cell>
     </section>
@@ -81,11 +81,11 @@ function Record({ w, l, t }: { w: number; l: number; t: number }) {
   return (
     <span>
       <span className="good">{pad(w)}</span>
-      <span className="dim">-</span>
+      <span className="muted">–</span>
       <span className="bad">{pad(l)}</span>
       {t > 0 && (
         <>
-          <span className="dim">-</span>
+          <span className="muted">–</span>
           {pad(t)}
         </>
       )}

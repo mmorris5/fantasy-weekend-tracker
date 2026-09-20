@@ -35,7 +35,7 @@ export default function App() {
       />
     )
   }
-  if (!user.data) return <div className="boot dim">LOADING…</div>
+  if (!user.data) return <div className="boot muted">Loading…</div>
   return <Dashboard username={user.data.display_name || username} userId={user.data.user_id} onChangeUser={() => setEditingUser(true)} />
 }
 
@@ -137,20 +137,20 @@ function Dashboard({ username, userId, onChangeUser }: { username: string; userI
         onSettings={() => setShowSettings(true)}
       />
       <main>
-        {loadError && <div className="banner error">ERR: COULDN'T REACH SLEEPER. {(loadError as Error).message}</div>}
-        {errors.length > 0 && <div className="banner warn">WARN: {errors.length} REQUEST(S) FAILED. RETRYING AUTOMATICALLY.</div>}
-        {leaguesQ.data && allLeagues.length === 0 && <div className="banner">NO {season} NFL LEAGUES FOUND FOR {username.toUpperCase()}.</div>}
+        {loadError && <div className="banner error">Couldn't reach Sleeper: {(loadError as Error).message}</div>}
+        {errors.length > 0 && <div className="banner warn">{errors.length} request(s) failed. Retrying automatically.</div>}
+        {leaguesQ.data && allLeagues.length === 0 && <div className="banner">No {season} NFL leagues found for {username}.</div>}
 
         {tab !== 'season' && (
           <>
             <div className="toolbar">
               <span>
-                <span className="amber strong">WEEK {String(week).padStart(2, '0')}</span>
-                <span className="dim">{week === currentWeek ? ' · CURRENT' : week > currentWeek ? ' · UPCOMING' : ' · FINAL'}</span>
+                <h1>Week {week}</h1>
+                <span className="muted">{week === currentWeek ? 'this week' : week > currentWeek ? 'upcoming' : 'past week'}</span>
               </span>
               {tab === 'matchups' && (
-                <label className="sort dim">
-                  SORT
+                <label className="sort muted">
+                  Sort
                   <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
                     {SORTS.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -173,10 +173,10 @@ function Dashboard({ username, userId, onChangeUser }: { username: string; userI
         {tab === 'season' && <Season leagues={leagues} userId={userId} currentWeek={currentWeek} />}
 
         {hidden.length > 0 && (
-          <p className="dim footnote">
-            {hidden.length} LEAGUE{hidden.length > 1 ? 'S' : ''} HIDDEN ·{' '}
+          <p className="muted footnote">
+            {hidden.length} league{hidden.length > 1 ? 's' : ''} hidden ·{' '}
             <button className="text-btn" onClick={() => setShowSettings(true)}>
-              [MANAGE]
+              manage
             </button>
           </p>
         )}

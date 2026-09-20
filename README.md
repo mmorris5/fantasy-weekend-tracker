@@ -11,7 +11,7 @@ npm run dev
 
 ## What's on screen
 
-- **Matchups**: one row per league with live score, opponent, margin bar (live and projected), and how many starters each side has left. Click a row (or `j`/`k` + Enter) for mirrored lineups and benches.
+- **Matchups**: a card per league — your score, the opponent's, a live/projected margin bar, starters left, and your record. Each league keeps its own accent color. Click a card (or `j`/`k` + Enter) to expand it full width with both lineups and benches.
 - **Rooting Guide**: every starter across all your lineups and your opponents', netted by league. Shows who to root for and against.
 - **Season**: W/L grid by league and week, plus your overall record.
 - Game strip showing each NFL game's score/clock and how many of your (green) and your opponents' (red) starters are in it.
@@ -20,7 +20,9 @@ Keyboard: `1`/`2`/`3` tabs · `←`/`→` week · `j`/`k` move · Enter open · 
 
 ## Phones
 
-Below 900px the wide column grid re-flows: each league becomes a stacked card, lineups list your player above your opponent's, and the keyboard status bar drops away. On iOS, Share → *Add to Home Screen* installs it with an app icon and opens it fullscreen (a web manifest covers Android).
+Below 900px the cards go one per row, lineups list your player above your opponent's, and the keyboard status bar drops away. On iOS, Share → *Add to Home Screen* installs it with an app icon and opens it fullscreen (a web manifest covers Android).
+
+The UI theme lives entirely in `src/index.css` (tokens at the top, light and dark). `style-preview.html` is a scratch gallery of other looks that were considered — open it with the dev server running at `/style-preview.html`.
 
 ## Data
 

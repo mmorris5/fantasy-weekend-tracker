@@ -263,17 +263,25 @@ export function tone(status: Status): 'good' | 'bad' | 'neutral' {
 }
 
 export const STATUS_LABEL: Record<Status, string> = {
-  winning: 'WIN',
-  losing: 'LOSS',
-  tied: 'TIED',
-  won: 'WON',
-  lost: 'LOST',
-  tie: 'TIE',
-  upcoming: 'PRE',
-  safe: 'SAFE',
-  danger: 'RISK',
-  chopped: 'CHOP',
-  eliminated: 'OUT',
-  nomatch: 'BYE',
-  notfound: 'N/A',
+  winning: 'Winning',
+  losing: 'Losing',
+  tied: 'Tied',
+  won: 'Won',
+  lost: 'Lost',
+  tie: 'Tie',
+  upcoming: 'Not started',
+  safe: 'Safe',
+  danger: 'On the block',
+  chopped: 'Chopped',
+  eliminated: 'Eliminated',
+  nomatch: 'No matchup',
+  notfound: 'No team',
+}
+
+/** Stable per-league card color, so a league keeps the same stripe every week. */
+const ACCENTS = ['#4f7cff', '#ff7043', '#8e6cf7', '#00b8a9', '#ef476f', '#f4a261', '#2a9d8f', '#e8566d', '#3f8cff', '#b07cff']
+export function leagueAccent(leagueId: string): string {
+  let hash = 0
+  for (let i = 0; i < leagueId.length; i++) hash = (hash * 31 + leagueId.charCodeAt(i)) >>> 0
+  return ACCENTS[hash % ACCENTS.length]
 }

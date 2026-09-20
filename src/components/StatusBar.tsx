@@ -1,10 +1,10 @@
 const KEYS: [string, string][] = [
-  ['1-3', 'TABS'],
-  ['←→', 'WEEK'],
-  ['J/K', 'MOVE'],
-  ['↵', 'OPEN'],
-  ['E', 'EXPAND ALL'],
-  ['R', 'REFRESH'],
+  ['1-3', 'tabs'],
+  ['←→', 'week'],
+  ['j/k', 'move'],
+  ['↵', 'open'],
+  ['e', 'expand all'],
+  ['r', 'refresh'],
 ]
 
 export function StatusBar({ source, leagues }: { source: string | undefined; leagues: number }) {
@@ -17,8 +17,8 @@ export function StatusBar({ source, leagues }: { source: string | undefined; lea
         </span>
       ))}
       <span className="spacer" />
-      <span className="dim">
-        {leagues} LEAGUES · SLEEPER{source === 'espn' ? ' + ESPN' : ''}
+      <span className="muted">
+        {leagues} leagues · Sleeper{source === 'espn' ? ' + ESPN' : ''}
       </span>
     </footer>
   )

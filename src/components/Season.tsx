@@ -36,24 +36,24 @@ export function Season({ leagues, userId, currentWeek }: Props) {
     <section className="season">
       <section className="summary">
         <div className="cell">
-          <div className="cell-label">SEASON H2H · SETTLED</div>
+          <div className="cell-label">Season record · settled weeks</div>
           <div className="cell-value">
             <span className="good">{String(totalW).padStart(2, '0')}</span>
             <span className="dim">-</span>
             <span className="bad">{String(totalL).padStart(2, '0')}</span>
             {totalT > 0 && <>-{String(totalT).padStart(2, '0')}</>}
           </div>
-          <div className="cell-hint">{totalW + totalL + totalT ? `${((totalW / (totalW + totalL + totalT)) * 100).toFixed(1)}% WIN RATE` : 'NO WEEKS FINAL YET'}</div>
+          <div className="cell-hint">{totalW + totalL + totalT ? `${((totalW / (totalW + totalL + totalT)) * 100).toFixed(0)}% win rate` : 'No weeks final yet'}</div>
         </div>
       </section>
       <div className="panel season-scroll">
         <table className="season-table">
           <thead>
             <tr>
-              <th className="left">LEAGUE</th>
-              <th>REC</th>
+              <th className="left">League</th>
+              <th>Record</th>
               {weeks.map((w) => (
-                <th key={w}>W{String(w).padStart(2, '0')}</th>
+                <th key={w}>W{w}</th>
               ))}
             </tr>
           </thead>
@@ -66,7 +66,7 @@ export function Season({ leagues, userId, currentWeek }: Props) {
                 <tr key={l.league_id}>
                   <td className="left">
                     <a href={sleeperLeagueUrl(l.league_id)} target="_blank" rel="noreferrer">
-                      {l.name.toUpperCase()}
+                      {l.name}
                     </a>
                   </td>
                   <td className="season-record">
@@ -76,7 +76,7 @@ export function Season({ leagues, userId, currentWeek }: Props) {
                         {me.record.w + me.record.l + me.record.t > 0 && (
                           <span className="muted">
                             {' '}
-                            #{String(me.rank).padStart(2, '0')}/{rosterCount}
+                            #{me.rank} of {rosterCount}
                           </span>
                         )}
                       </>
@@ -93,20 +93,20 @@ export function Season({ leagues, userId, currentWeek }: Props) {
           </tbody>
         </table>
       </div>
-      <p className="dim footnote">RECORDS UPDATE WHEN SLEEPER PROCESSES THE WEEK (USUALLY TUE). CURRENT WEEK SHOWS LIVE SCORE.</p>
+      <p className="muted footnote">Records update when Sleeper processes the week (usually Tuesday). The current week shows the live score.</p>
     </section>
   )
 }
 
 function SeasonCell({ c }: { c: LeagueWeek | undefined }) {
-  if (!c) return <td className="dim">..</td>
-  if (!c.me || c.status === 'nomatch' || c.status === 'notfound') return <td className="dim">--</td>
-  if (c.status === 'eliminated') return <td className="dim">OUT</td>
+  if (!c) return <td className="muted">·</td>
+  if (!c.me || c.status === 'nomatch' || c.status === 'notfound') return <td className="muted">—</td>
+  if (c.status === 'eliminated') return <td className="muted">out</td>
 
   let letter = ''
   let cls = 'neutral'
   if (c.kind === 'guillotine') {
-    letter = c.survival ? `#${String(c.survival.rank).padStart(2, '0')}` : ''
+    letter = c.survival ? `#${c.survival.rank}` : ''
     cls = c.status === 'chopped' ? 'bad' : c.final ? 'good' : 'neutral'
   } else if (c.opp) {
     letter = c.margin > 0 ? 'W' : c.margin < 0 ? 'L' : 'T'
@@ -116,7 +116,7 @@ function SeasonCell({ c }: { c: LeagueWeek | undefined }) {
   const title = c.opp ? `${pts(c.me.points)} – ${pts(c.opp.points)} vs ${c.opp.name}` : pts(c.me.points)
   return (
     <td className={`wk ${cls} ${c.final ? 'final' : 'live'}`} title={title}>
-      <span className="strong">{letter || '·'}</span> <span className="dim">{c.started || c.final ? c.me.points.toFixed(1) : ''}</span>
+      <span className="wk-letter">{letter || '·'}</span> <span className="muted">{c.started || c.final ? c.me.points.toFixed(1) : ''}</span>
     </td>
   )
 }
